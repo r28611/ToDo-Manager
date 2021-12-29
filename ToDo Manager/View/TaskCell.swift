@@ -12,6 +12,7 @@ class TaskCell: UITableViewCell {
     private lazy var statusLabel: UILabel = {
         let label = UILabel(frame: CGRect(x: 0, y: 0, width: 16, height: 16))
         label.text = "◎"
+        label.tag = 1
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -19,6 +20,7 @@ class TaskCell: UITableViewCell {
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Test task"
+        label.tag = 2
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
