@@ -11,7 +11,7 @@ class TaskListController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.register(TaskCell.self, forCellReuseIdentifier: "TaskCell")
+        tableView.register(TaskCell.self, forCellReuseIdentifier: "taskCellConstraints")
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
 
@@ -32,7 +32,7 @@ class TaskListController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell",
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "taskCellConstraints",
                                                        for: indexPath) as? TaskCell
         else { return UITableViewCell() }
         return cell

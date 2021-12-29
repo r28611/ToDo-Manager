@@ -18,7 +18,7 @@ class TaskCell: UITableViewCell {
     
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Test"
+        label.text = "Test task"
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -28,11 +28,13 @@ class TaskCell: UITableViewCell {
         contentView.addSubview(statusLabel)
         contentView.addSubview(titleLabel)
         
+        let margins = layoutMarginsGuide
         NSLayoutConstraint.activate([
-            statusLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
+            statusLabel.leadingAnchor.constraint(equalTo: margins.leadingAnchor),
             statusLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             
             titleLabel.leadingAnchor.constraint(equalTo: statusLabel.trailingAnchor, constant: 18),
+            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: margins.trailingAnchor),
             titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
     }
