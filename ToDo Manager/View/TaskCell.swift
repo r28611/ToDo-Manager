@@ -10,9 +10,10 @@ import UIKit
 class TaskCell: UITableViewCell {
     
     private lazy var statusLabel: UILabel = {
-        let label = UILabel(frame: CGRect(x: 0, y: 0, width: 16, height: 16))
+        let label = UILabel()
         label.text = "◎"
         label.tag = 1
+        label.setContentHuggingPriority(.init(rawValue: 251), for: .horizontal)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -21,38 +22,35 @@ class TaskCell: UITableViewCell {
         let label = UILabel()
         label.text = "Test task"
         label.tag = 2
+        label.setContentHuggingPriority(.init(rawValue: 250), for: .horizontal)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
+    private lazy var horizontalStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [statusLabel, titleLabel])
+        stackView.axis = .horizontal
+        stackView.alignment = .fill
+        stackView.distribution = .fill
+        stackView.spacing = 10
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        return stackView
+    }()
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        contentView.addSubview(statusLabel)
-        contentView.addSubview(titleLabel)
+        contentView.addSubview(horizontalStackView)
         
         let margins = layoutMarginsGuide
         NSLayoutConstraint.activate([
-            statusLabel.leadingAnchor.constraint(equalTo: margins.leadingAnchor),
-            statusLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            
-            titleLabel.leadingAnchor.constraint(equalTo: statusLabel.trailingAnchor, constant: 18),
-            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: margins.trailingAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+            horizontalStackView.topAnchor.constraint(equalTo: margins.topAnchor),
+            horizontalStackView.bottomAnchor.constraint(equalTo: margins.bottomAnchor),
+            horizontalStackView.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
+            horizontalStackView.leadingAnchor.constraint(equalTo: margins.leadingAnchor)
         ])
     }
     
     required init?(coder aDecoder: NSCoder) {
             fatalError("init(coder:) has not been implemented")
     }
-
-    override func awakeFromNib() {
-        super.awakeFromNib()
-    }
-
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
-    }
-
 }
