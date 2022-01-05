@@ -76,23 +76,25 @@ class TaskListController: UITableViewController {
    
     private func getConfiguredTaskCell(for indexPath: IndexPath) -> UITableViewCell {
 
-        let cell = tableView.dequeueReusableCell(withIdentifier: "taskCellConstraints", for: indexPath)
-        let taskType = sectionsTypesPosition[indexPath.section]
-        guard let currentTask = tasks[taskType]?[indexPath.row] else { return cell }
+        if let cell = tableView.dequeueReusableCell(withIdentifier: "taskCellConstraints", for: indexPath) as? TaskCell {
+            let taskType = sectionsTypesPosition[indexPath.section]
+            guard let currentTask = tasks[taskType]?[indexPath.row] else { return cell }
 
-        let symbolLabel = cell.viewWithTag(1) as? UILabel
-        let textLabel = cell.viewWithTag(2) as? UILabel
-    
-        symbolLabel?.text = getSymbolForTask(with: currentTask.status)
-        textLabel?.text = currentTask.title
-        if currentTask.status == .planned {
-            textLabel?.textColor = .black
-            symbolLabel?.textColor = .black }
-        else {
-            textLabel?.textColor = .lightGray
-            symbolLabel?.textColor = .lightGray
+            cell.statusLabel.text = getSymbolForTask(with: currentTask.status)
+            cell.titleLabel.text = currentTask.title
+            
+            if currentTask.status == .planned {
+                cell.titleLabel.textColor = .black
+                cell.statusLabel.textColor = .black }
+            else {
+                cell.titleLabel.textColor = .lightGray
+                cell.statusLabel.textColor = .lightGray
+            }
+            cell.titleLabel.numberOfLines = 0
+            cell.titleLabel.sizeToFit()
+            return cell
         }
-        return cell
+        else { return UITableViewCell() }
     }
 
     private func getSymbolForTask(with status: TaskStatus) -> String {
