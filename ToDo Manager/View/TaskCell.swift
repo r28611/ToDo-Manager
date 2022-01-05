@@ -9,20 +9,19 @@ import UIKit
 
 class TaskCell: UITableViewCell {
     
-    private lazy var statusLabel: UILabel = {
+    lazy var statusLabel: UILabel = {
         let label = UILabel()
-        label.text = "◎"
         label.tag = 1
         label.setContentHuggingPriority(.init(rawValue: 251), for: .horizontal)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
-    private lazy var titleLabel: UILabel = {
+    lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Test task"
         label.tag = 2
         label.setContentHuggingPriority(.init(rawValue: 250), for: .horizontal)
+        label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -41,7 +40,7 @@ class TaskCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.addSubview(horizontalStackView)
         
-        let margins = layoutMarginsGuide
+        let margins = contentView.layoutMarginsGuide
         NSLayoutConstraint.activate([
             horizontalStackView.topAnchor.constraint(equalTo: margins.topAnchor),
             horizontalStackView.bottomAnchor.constraint(equalTo: margins.bottomAnchor),
