@@ -10,9 +10,17 @@ import UIKit
 class TaskListController: UITableViewController {
     
     var tasksStorage: TasksStorageProtocol = TasksStorage()
-    var tasks: [TaskPriority:[TaskProtocol]] = [:]
+    var tasks: [TaskPriority:[TaskProtocol]] = [:] { didSet {
+        for (tasksGroupPriority, tasksGroup) in tasks { tasks[tasksGroupPriority] = tasksGroup.sorted{ task1, task2 in
+            let task1position = tasksStatusPosition.firstIndex(of: task1.status) ?? 0
+            let task2position = tasksStatusPosition.firstIndex(of: task2.status) ?? 0
+            return task1position < task2position }
+        } }
+    }
     var sectionsTypesPosition: [TaskPriority] = [.important, .normal]
     var tasksStatusPosition: [TaskStatus] = [.planned, .completed]
+    
+    // MARK: - Initialization
     
     init() {
         if #available(iOS 13.0, *) {
@@ -26,10 +34,14 @@ class TaskListController: UITableViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - Controller lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.register(TaskCell.self, forCellReuseIdentifier: "taskCellConstraints")
         loadTasks()
+        navigationItem.leftBarButtonItem = editButtonItem
+        navigationItem.rightBarButtonItem = .init(barButtonSystemItem: .add, target: self, action: #selector(openAddTask))
     }
 
     // MARK: - Table view data source
@@ -58,19 +70,82 @@ class TaskListController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         return getConfiguredTaskCell(for: indexPath)
     }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let taskType = sectionsTypesPosition[indexPath.section]
+        guard let _ = tasks[taskType]?[indexPath.row] else { return }
+        guard tasks[taskType]![indexPath.row].status == .planned else {
+            tableView.deselectRow(at: indexPath, animated: true)
+            return
+        }
+        tasks[taskType]![indexPath.row].status = .completed
+        tableView.reloadSections(IndexSet(arrayLiteral: indexPath.section), with: .automatic)
+    }
+    
+    override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let taskType = sectionsTypesPosition[indexPath.section]
+        guard let _ = tasks[taskType]?[indexPath.row] else { return nil }
         
+        let actionSwipeInstance = UIContextualAction(style: .normal, title: "Не выполнена") { _,_,_ in
+            self.tasks[taskType]![indexPath.row].status = .planned
+            self.tableView.reloadSections(IndexSet(arrayLiteral: indexPath.section), with: .automatic)
+        }
+        
+        let actionEditInstance = UIContextualAction(style: .normal, title: "Изменить") { _,_,_ in
+            
+            let editScreen = TaskEditController()
+            editScreen.taskText = self.tasks[taskType]![indexPath.row].title
+            editScreen.taskType = self.tasks[taskType]![indexPath.row].type
+            editScreen.taskStatus = self.tasks[taskType]![indexPath.row].status
+            editScreen.doAfterEdit = { [unowned self] title, type, status in
+                let editedTask = Task(title: title, type: type, status: status)
+                if taskType == editedTask.type {
+                    tasks[taskType]![indexPath.row] = editedTask
+                } else {
+                    tasks[taskType]?.remove(at: indexPath.row)
+                    tasks[editedTask.type]?.append(editedTask)
+                }
+                tableView.reloadData()
+            }
+            self.navigationController?.pushViewController(editScreen, animated: true)
+        }
+        actionEditInstance.backgroundColor = .darkGray
+        let actionsConfiguration: UISwipeActionsConfiguration
+        
+        if tasks[taskType]![indexPath.row].status == .completed {
+            actionsConfiguration = UISwipeActionsConfiguration(actions: [actionSwipeInstance, actionEditInstance])
+        } else {
+            actionsConfiguration = UISwipeActionsConfiguration(actions: [actionEditInstance]) }
+        return actionsConfiguration
+    }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        let taskType = sectionsTypesPosition[indexPath.section]
+        tasks[taskType]?.remove(at: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: .automatic)
+    }
+    
+    override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        let taskTypeFrom = sectionsTypesPosition[sourceIndexPath.section]
+        let taskTypeTo = sectionsTypesPosition[destinationIndexPath.section]
+        guard let movedTask = tasks[taskTypeFrom]?[sourceIndexPath.row] else {
+            return }
+        tasks[taskTypeFrom]!.remove(at: sourceIndexPath.row)
+        tasks[taskTypeTo]!.insert(movedTask, at: destinationIndexPath.row)
+
+        if taskTypeFrom != taskTypeTo {
+            tasks[taskTypeTo]![destinationIndexPath.row].type = taskTypeTo }
+        tableView.reloadData()
+    }
+    
+    // MARK: - Private methods
+    
     private func loadTasks() {
         sectionsTypesPosition.forEach { taskType in
             tasks[taskType] = []
         }
         tasksStorage.loadTasks().forEach { task in
             tasks[task.type]?.append(task)
-        }
-        for (tasksGroupPriority, tasksGroup) in tasks {
-        tasks[tasksGroupPriority] = tasksGroup.sorted { task1, task2 in
-            let task1position = tasksStatusPosition.firstIndex(of: task1.status) ?? 0
-            let task2position = tasksStatusPosition.firstIndex(of: task2.status) ?? 0
-            return task1position < task2position }
         }
     }
    
@@ -105,5 +180,15 @@ class TaskListController: UITableViewController {
             resultSymbol = "\u{25C9}" } else {
                 resultSymbol = "" }
         return resultSymbol
+    }
+    
+    @objc private func openAddTask() {
+        let vc = TaskEditController()
+        vc.doAfterEdit = { [unowned self] title, type, status in
+            let newTask = Task(title: title, type: type, status: status)
+            tasks[type]?.append(newTask)
+            tableView.reloadData()
+        }
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
