@@ -96,7 +96,14 @@ class TaskEditController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.row == 1 {
-            navigationController?.pushViewController(TaskTypeController(), animated: true)
+            let vc = TaskTypeController()
+            vc.selectedType = taskType
+            vc.doAfterTypeSelected = { [unowned self] selectedType in
+                taskType = selectedType
+                taskTypeLabel.text = taskTitles[taskType]
+            }
+            navigationController?.pushViewController(vc, animated: true)
+            
         }
     }
 }

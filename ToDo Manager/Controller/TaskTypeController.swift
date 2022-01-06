@@ -15,6 +15,7 @@ class TaskTypeController: UITableViewController {
         (type: .normal, title: "Текущая", description: "Задача с обычным приоритетом")
     ]
     var selectedType: TaskPriority = .normal
+    var doAfterTypeSelected: ((TaskPriority) -> Void)?
     
     // MARK: - Initialization
     
@@ -58,4 +59,9 @@ class TaskTypeController: UITableViewController {
             cell.accessoryType = .none }
         return cell }
     
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedType = taskTypesInformation[indexPath.row].type
+        doAfterTypeSelected?(selectedType)
+        navigationController?.popViewController(animated: true)
+    }
 }
