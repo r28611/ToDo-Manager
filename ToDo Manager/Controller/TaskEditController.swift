@@ -70,6 +70,8 @@ class TaskEditController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationItem.rightBarButtonItem = .init(title: "Сохранить", style: .plain, target: self, action: #selector(saveTask))
+        
         tableView.backgroundColor = .systemGroupedBackground
         taskTitle.text = taskText
         taskTypeLabel.text = taskTitles[taskType]
@@ -93,7 +95,7 @@ class TaskEditController: UITableViewController {
         switch indexPath.row {
         case 0:
             taskTitle.frame = cell.bounds.insetBy(dx: 16, dy: 0)
-            cell.addSubview(taskTitle)
+            cell.contentView.addSubview(taskTitle)
         case 1:
             cell.accessoryType = .disclosureIndicator
             typeLabel.frame = cell.bounds.insetBy(dx: 16, dy: 0)
@@ -123,5 +125,13 @@ class TaskEditController: UITableViewController {
             navigationController?.pushViewController(vc, animated: true)
             
         }
+    }
+    
+    @objc private func saveTask() {
+        let title = taskTitle.text ?? ""
+        let type = taskType
+        let status: TaskStatus = statusSwitch.isOn ? .completed : .planned
+        doAfterEdit?(title, type, status)
+        navigationController?.popViewController(animated: true)
     }
 }

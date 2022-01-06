@@ -158,6 +158,12 @@ class TaskListController: UITableViewController {
     }
     
     @objc private func openAddTask() {
-        navigationController?.pushViewController(TaskEditController(), animated: true)
+        let vc = TaskEditController()
+        vc.doAfterEdit = { [unowned self] title, type, status in
+            let newTask = Task(title: title, type: type, status: status)
+            tasks[type]?.append(newTask)
+            tableView.reloadData()
+        }
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
