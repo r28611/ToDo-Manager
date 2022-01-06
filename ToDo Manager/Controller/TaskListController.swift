@@ -85,13 +85,38 @@ class TaskListController: UITableViewController {
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let taskType = sectionsTypesPosition[indexPath.section]
         guard let _ = tasks[taskType]?[indexPath.row] else { return nil }
-        guard tasks[taskType]![indexPath.row].status == .completed else { return nil }
-        let actionSwipeInstance = UIContextualAction(style: .normal, title: "Обновить") { _,_,_ in
+        
+        let actionSwipeInstance = UIContextualAction(style: .normal, title: "Не выполнена") { _,_,_ in
             self.tasks[taskType]![indexPath.row].status = .planned
             self.tableView.reloadSections(IndexSet(arrayLiteral: indexPath.section), with: .automatic)
         }
-        actionSwipeInstance.backgroundColor = .systemPink
-        return UISwipeActionsConfiguration(actions: [actionSwipeInstance])
+        
+        let actionEditInstance = UIContextualAction(style: .normal, title: "Изменить") { _,_,_ in
+            
+            let editScreen = TaskEditController()
+            editScreen.taskText = self.tasks[taskType]![indexPath.row].title
+            editScreen.taskType = self.tasks[taskType]![indexPath.row].type
+            editScreen.taskStatus = self.tasks[taskType]![indexPath.row].status
+            editScreen.doAfterEdit = { [unowned self] title, type, status in
+                let editedTask = Task(title: title, type: type, status: status)
+                if taskType == editedTask.type {
+                    tasks[taskType]![indexPath.row] = editedTask
+                } else {
+                    tasks[taskType]?.remove(at: indexPath.row)
+                    tasks[editedTask.type]?.append(editedTask)
+                }
+                tableView.reloadData()
+            }
+            self.navigationController?.pushViewController(editScreen, animated: true)
+        }
+        actionEditInstance.backgroundColor = .darkGray
+        let actionsConfiguration: UISwipeActionsConfiguration
+        
+        if tasks[taskType]![indexPath.row].status == .completed {
+            actionsConfiguration = UISwipeActionsConfiguration(actions: [actionSwipeInstance, actionEditInstance])
+        } else {
+            actionsConfiguration = UISwipeActionsConfiguration(actions: [actionEditInstance]) }
+        return actionsConfiguration
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
