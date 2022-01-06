@@ -20,6 +20,8 @@ class TaskListController: UITableViewController {
     var sectionsTypesPosition: [TaskPriority] = [.important, .normal]
     var tasksStatusPosition: [TaskStatus] = [.planned, .completed]
     
+    // MARK: - Initialization
+    
     init() {
         if #available(iOS 13.0, *) {
             super.init(style: .insetGrouped)
@@ -39,6 +41,7 @@ class TaskListController: UITableViewController {
         tableView.register(TaskCell.self, forCellReuseIdentifier: "taskCellConstraints")
         loadTasks()
         navigationItem.leftBarButtonItem = editButtonItem
+        navigationItem.rightBarButtonItem = .init(barButtonSystemItem: .add, target: self, action: #selector(openAddTask))
     }
 
     // MARK: - Table view data source
@@ -152,5 +155,9 @@ class TaskListController: UITableViewController {
             resultSymbol = "\u{25C9}" } else {
                 resultSymbol = "" }
         return resultSymbol
+    }
+    
+    @objc private func openAddTask() {
+        navigationController?.pushViewController(TaskEditController(), animated: true)
     }
 }
