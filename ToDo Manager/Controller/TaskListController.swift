@@ -10,7 +10,13 @@ import UIKit
 class TaskListController: UITableViewController {
     
     var tasksStorage: TasksStorageProtocol = TasksStorage()
-    var tasks: [TaskPriority:[TaskProtocol]] = [:]
+    var tasks: [TaskPriority:[TaskProtocol]] = [:] { didSet {
+        for (tasksGroupPriority, tasksGroup) in tasks { tasks[tasksGroupPriority] = tasksGroup.sorted{ task1, task2 in
+            let task1position = tasksStatusPosition.firstIndex(of: task1.status) ?? 0
+            let task2position = tasksStatusPosition.firstIndex(of: task2.status) ?? 0
+            return task1position < task2position }
+        } }
+    }
     var sectionsTypesPosition: [TaskPriority] = [.important, .normal]
     var tasksStatusPosition: [TaskStatus] = [.planned, .completed]
     
@@ -58,19 +64,36 @@ class TaskListController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         return getConfiguredTaskCell(for: indexPath)
     }
-        
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let taskType = sectionsTypesPosition[indexPath.section]
+        guard let _ = tasks[taskType]?[indexPath.row] else { return }
+        guard tasks[taskType]![indexPath.row].status == .planned else {
+            tableView.deselectRow(at: indexPath, animated: true)
+            return
+        }
+        tasks[taskType]![indexPath.row].status = .completed
+        tableView.reloadSections(IndexSet(arrayLiteral: indexPath.section), with: .automatic)
+    }
+    
+    override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let taskType = sectionsTypesPosition[indexPath.section]
+        guard let _ = tasks[taskType]?[indexPath.row] else { return nil }
+        guard tasks[taskType]![indexPath.row].status == .completed else { return nil }
+        let actionSwipeInstance = UIContextualAction(style: .normal, title: "Обновить") { _,_,_ in
+            self.tasks[taskType]![indexPath.row].status = .planned
+            self.tableView.reloadSections(IndexSet(arrayLiteral: indexPath.section), with: .automatic)
+        }
+        actionSwipeInstance.backgroundColor = .systemPink
+        return UISwipeActionsConfiguration(actions: [actionSwipeInstance])
+    }
+    
     private func loadTasks() {
         sectionsTypesPosition.forEach { taskType in
             tasks[taskType] = []
         }
         tasksStorage.loadTasks().forEach { task in
             tasks[task.type]?.append(task)
-        }
-        for (tasksGroupPriority, tasksGroup) in tasks {
-        tasks[tasksGroupPriority] = tasksGroup.sorted { task1, task2 in
-            let task1position = tasksStatusPosition.firstIndex(of: task1.status) ?? 0
-            let task2position = tasksStatusPosition.firstIndex(of: task2.status) ?? 0
-            return task1position < task2position }
         }
     }
    
