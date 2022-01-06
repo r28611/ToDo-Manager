@@ -40,6 +40,18 @@ class TaskEditController: UITableViewController {
         .normal: "Текущая"
     ]
     
+    private let statusLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Выполнена"
+        return label
+    }()
+    
+    private let statusSwitch: UISwitch = {
+        let switcher = UISwitch()
+        switcher.isUserInteractionEnabled = true
+        return switcher
+    }()
+    
     // MARK: - Initialization
     
     init() {
@@ -61,6 +73,9 @@ class TaskEditController: UITableViewController {
         tableView.backgroundColor = .systemGroupedBackground
         taskTitle.text = taskText
         taskTypeLabel.text = taskTitles[taskType]
+        if taskStatus == .completed {
+            statusSwitch.isOn = true
+        }
     }
 
     // MARK: - Table view data source
@@ -86,8 +101,11 @@ class TaskEditController: UITableViewController {
             cell.addSubview(typeLabel)
             cell.addSubview(taskTypeLabel)
         case 2:
-            let textField = UITextField()
-            cell.contentView.addSubview(textField)
+            statusLabel.frame = cell.bounds.insetBy(dx: 16, dy: 0)
+            statusSwitch.frame = cell.bounds.offsetBy(dx: cell.frame.width - statusSwitch.frame.width,
+                                                     dy: (cell.bounds.height - statusSwitch.frame.height) / 2)
+            cell.addSubview(statusLabel)
+            cell.contentView.addSubview(statusSwitch)
         default:
             return cell
         }
