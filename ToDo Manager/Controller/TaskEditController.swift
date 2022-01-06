@@ -91,8 +91,12 @@ class TaskEditController: UITableViewController {
         default:
             return cell
         }
-        
-
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if indexPath.row == 1 {
+            navigationController?.pushViewController(TaskTypeController(), animated: true)
+        }
     }
 }
