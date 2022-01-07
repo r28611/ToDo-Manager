@@ -61,13 +61,13 @@ class TaskEditController: UITableViewController {
             super.init(nibName: nil, bundle: nil)
         }
     }
-        
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
     // MARK: - Controller lifecycle
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.rightBarButtonItem = .init(title: "Сохранить", style: .plain, target: self, action: #selector(saveTask))
@@ -79,17 +79,17 @@ class TaskEditController: UITableViewController {
             statusSwitch.isOn = true
         }
     }
-
+    
     // MARK: - Table view data source
-
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
-
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 3
     }
-
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell()
         switch indexPath.row {
@@ -105,7 +105,7 @@ class TaskEditController: UITableViewController {
         case 2:
             statusLabel.frame = cell.bounds.insetBy(dx: 16, dy: 0)
             statusSwitch.frame = cell.bounds.offsetBy(dx: cell.frame.width - statusSwitch.frame.width,
-                                                     dy: (cell.bounds.height - statusSwitch.frame.height) / 2)
+                                                      dy: (cell.bounds.height - statusSwitch.frame.height) / 2)
             cell.addSubview(statusLabel)
             cell.contentView.addSubview(statusSwitch)
         default:
@@ -128,10 +128,26 @@ class TaskEditController: UITableViewController {
     }
     
     @objc private func saveTask() {
-        let title = taskTitle.text ?? ""
-        let type = taskType
-        let status: TaskStatus = statusSwitch.isOn ? .completed : .planned
-        doAfterEdit?(title, type, status)
-        navigationController?.popViewController(animated: true)
+        if let text = taskTitle.text,
+           !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let title = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            let type = taskType
+            let status: TaskStatus = statusSwitch.isOn ? .completed : .planned
+            doAfterEdit?(title, type, status)
+            navigationController?.popViewController(animated: true)
+        } else {
+            showAlert()
+        }
+    }
+    
+    private func showAlert() {
+        let alert = UIAlertController(
+            title: "Задача не создана!",
+            message: "Введите текст задачи",
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Ок",
+                                      style: .default,
+                                      handler: nil))
+        self.present(alert, animated: true, completion: nil)
     }
 }
