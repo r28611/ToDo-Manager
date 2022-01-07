@@ -65,6 +65,14 @@ class TaskListController: UITableViewController {
             title = "Текущие" }
         return title
     }
+    
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        let taskType = sectionsTypesPosition[section]
+        if let tasks = tasks[taskType],
+           tasks.count == 0 {
+            return "Задачи отсутствуют"
+        } else { return nil }
+    }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let taskType = sectionsTypesPosition[section]
