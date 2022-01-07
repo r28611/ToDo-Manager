@@ -17,10 +17,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(windowScene: windowScene)
         guard let window = window else { return }
 
+        let tasks = TasksStorage().loadTasks()
         let rootController = TaskListController()
+        rootController.setTasks(tasks)
+        
         let navigationController = UINavigationController(rootViewController: rootController)
         window.rootViewController = navigationController
-
         window.makeKeyAndVisible()
     }
 
