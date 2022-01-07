@@ -96,6 +96,7 @@ class TaskEditController: UITableViewController {
         case 0:
             taskTitle.frame = cell.bounds.insetBy(dx: 16, dy: 0)
             cell.contentView.addSubview(taskTitle)
+            cell.selectionStyle = .none
         case 1:
             cell.accessoryType = .disclosureIndicator
             typeLabel.frame = cell.bounds.insetBy(dx: 16, dy: 0)
@@ -108,6 +109,7 @@ class TaskEditController: UITableViewController {
                                                       dy: (cell.bounds.height - statusSwitch.frame.height) / 2)
             cell.addSubview(statusLabel)
             cell.contentView.addSubview(statusSwitch)
+            cell.selectionStyle = .none
         default:
             return cell
         }
