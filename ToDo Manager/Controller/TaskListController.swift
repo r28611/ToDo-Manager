@@ -10,12 +10,18 @@ import UIKit
 class TaskListController: UITableViewController {
     
     var tasksStorage: TasksStorageProtocol = TasksStorage()
-    var tasks: [TaskPriority:[TaskProtocol]] = [:] { didSet {
-        for (tasksGroupPriority, tasksGroup) in tasks { tasks[tasksGroupPriority] = tasksGroup.sorted{ task1, task2 in
-            let task1position = tasksStatusPosition.firstIndex(of: task1.status) ?? 0
-            let task2position = tasksStatusPosition.firstIndex(of: task2.status) ?? 0
-            return task1position < task2position }
-        } }
+    var tasks: [TaskPriority:[TaskProtocol]] = [:] {
+        didSet {
+            for (tasksGroupPriority, tasksGroup) in tasks { tasks[tasksGroupPriority] = tasksGroup.sorted { task1, task2 in
+                let task1position = tasksStatusPosition.firstIndex(of: task1.status) ?? 0
+                let task2position = tasksStatusPosition.firstIndex(of: task2.status) ?? 0
+                return task1position < task2position }
+            }
+            var savingArray: [TaskProtocol] = []
+            tasks.forEach { _, value in
+                savingArray += value }
+            tasksStorage.saveTasks(savingArray)
+        }
     }
     var sectionsTypesPosition: [TaskPriority] = [.important, .normal]
     var tasksStatusPosition: [TaskStatus] = [.planned, .completed]
@@ -39,7 +45,6 @@ class TaskListController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.register(TaskCell.self, forCellReuseIdentifier: "taskCellConstraints")
-        loadTasks()
         navigationItem.leftBarButtonItem = editButtonItem
         navigationItem.rightBarButtonItem = .init(barButtonSystemItem: .add, target: self, action: #selector(openAddTask))
     }
@@ -59,6 +64,14 @@ class TaskListController: UITableViewController {
         } else if tasksType == .normal {
             title = "Текущие" }
         return title
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        let taskType = sectionsTypesPosition[section]
+        if let tasks = tasks[taskType],
+           tasks.count == 0 {
+            return "Задачи отсутствуют"
+        } else { return nil }
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -139,15 +152,6 @@ class TaskListController: UITableViewController {
     }
     
     // MARK: - Private methods
-    
-    private func loadTasks() {
-        sectionsTypesPosition.forEach { taskType in
-            tasks[taskType] = []
-        }
-        tasksStorage.loadTasks().forEach { task in
-            tasks[task.type]?.append(task)
-        }
-    }
    
     private func getConfiguredTaskCell(for indexPath: IndexPath) -> UITableViewCell {
 
@@ -190,5 +194,12 @@ class TaskListController: UITableViewController {
             tableView.reloadData()
         }
         navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    func setTasks(_ tasksCollection: [TaskProtocol]) {
+        sectionsTypesPosition.forEach { taskType in
+            tasks[taskType] = [] }
+        tasksCollection.forEach { task in
+            tasks[task.type]?.append(task) }
     }
 }
